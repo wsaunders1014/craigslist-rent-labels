@@ -1,0 +1,38 @@
+/* Keep Leaflet's marker geometry and transform untouched. */
+.cl-marker-icon.crl-price-marker > div,
+.cl-marker-icon-visited.crl-price-marker > div { visibility: hidden; }
+.crl-price-label {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  display: block;
+  box-sizing: border-box;
+  padding: 3px 6px;
+  border: 1px solid #6f42a5;
+  border-radius: 9px;
+  background: #fff;
+  color: #48226f;
+  box-shadow: 0 1px 4px #0003;
+  font: 600 11px/14px Arial, sans-serif;
+  white-space: pre;
+  text-align: left;
+  pointer-events: auto;
+}
+.crl-price-marker:hover { z-index: 10000 !important; }
+.crl-price-marker:hover > .crl-price-label { background: #f2e8ff; }
+.cl-marker-icon-visited > .crl-price-label { border-color: #a6609a; color: #794372; }
+
+.leaflet-marker-icon .crl-price-label > .crl-listing-row {
+  display: block !important;
+  white-space: nowrap !important;
+  font: inherit;
+  line-height: 14px;
+}
+
+.crl-group-preview { max-height: 360px; overflow-y: auto; font: 12px/1.35 Arial, sans-serif; }
+.crl-group-preview > strong { display: block; padding: 2px 0 8px; }
+.crl-group-preview .crl-preview-item { display: flex; gap: 8px; padding: 8px 0; border-top: 1px solid #ddd; text-decoration: none; color: #48226f; }
+.crl-preview-item img { width: 55px; height: 55px; object-fit: cover; flex-shrink: 0; border-radius: 4px; }
+.crl-preview-item > span { min-width: 0; }
+.crl-preview-item strong, .crl-preview-item span > span { display: block; }
+.crl-preview-item:hover { background: #f6f0ff; }

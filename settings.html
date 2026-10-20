@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rent Labels settings</title>
+<link rel="stylesheet" href="settings.css">
+<script src="settings.js" defer></script>
+</head>
+<body>
+<main>
+<h1>Rent Labels</h1>
+<fieldset>
+<legend>When you click a grouped marker</legend>
+<label><input type="radio" name="groupClick" value="list" disabled> Open property list</label>
+<p>Preview the deduplicated offers without zooming.</p>
+<label><input type="radio" name="groupClick" value="zoom" disabled> Zoom into group</label>
+<p>Use Craigslist’s original map behavior.</p>
+</fieldset>
+<label for="maxRows">Rows shown on map bubbles</label>
+<input id="maxRows" type="number" min="1" max="20" step="1" value="3" disabled>
+<p class="hint">Show 1–20 properties before “+N more.” Full previews show all offers.</p>
+<p id="status" role="status">Loading settings…</p>
+</main>
+</body>
+</html>

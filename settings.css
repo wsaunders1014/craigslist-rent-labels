@@ -1,0 +1,13 @@
+:root { color-scheme: light; font: 14px/1.45 system-ui, sans-serif; color: #30223c; background: #faf8fc; }
+body { margin: 0; min-width: 300px; }
+main { padding: 20px; max-width: 430px; }
+h1 { font-size: 20px; margin: 0 0 18px; }
+fieldset { border: 0; padding: 0; margin: 0; }
+legend { font-weight: 600; margin-bottom: 14px; }
+label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+input { accent-color: #7543a3; margin: 0; }
+fieldset p { margin: 4px 0 16px 22px; font-size: 12px; color: #645b6a; }
+#status { font-size: 12px; color: #645b6a; margin: 12px 0 0; }
+
+#maxRows { display: block; width: 64px; padding: 6px 8px; margin-top: 8px; border: 1px solid #bbb; border-radius: 5px; font: inherit; }
+.hint { font-size: 12px; color: #645b6a; }

@@ -1,0 +1,9 @@
+{
+  "name": "craigslist-rent-labels",
+  "version": "0.6.0",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "test": "node --check content.js && node --check settings.js && node --check settings-bridge.js && node extension.test.cjs"
+  }
+}
