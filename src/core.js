@@ -57,10 +57,15 @@
     return Number.isInteger(listing.beds) && listing.beds > 0 ? `${listing.beds} Br` : '';
   }
 
-  /** Map label text such as '$2,000 · Studio'. */
-  function label(listing) {
+  /**
+   * Map label text such as '$2,000 · Studio'. When the search is limited to
+   * one bedroom count (fixedBeds), repeating it on every marker is noise, so
+   * bedrooms appear only for listings that differ from it.
+   */
+  function label(listing, {fixedBeds = null} = {}) {
     if (!listing.price) return 'Price unavailable';
-    const beds = bedroomLabel(listing);
+    const redundant = fixedBeds != null && (listing.beds == null || listing.beds === fixedBeds);
+    const beds = redundant ? '' : bedroomLabel(listing);
     return beds ? `${formatPrice(listing.price)} · ${beds}` : formatPrice(listing.price);
   }
 

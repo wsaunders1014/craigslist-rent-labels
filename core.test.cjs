@@ -17,6 +17,10 @@ assert.equal(core.label(listing({beds: 0})), '$1,500 · Studio');
 assert.equal(core.label(listing({title: 'Cozy studio'})), '$1,500 · Studio');
 assert.equal(core.label(listing({beds: 2})), '$1,500 · 2 Br');
 assert.equal(core.label(listing({price: null})), 'Price unavailable');
+assert.equal(core.label(listing({beds: 1}), {fixedBeds: 1}), '$1,500');
+assert.equal(core.label(listing({beds: 2}), {fixedBeds: 1}), '$1,500 · 2 Br');
+assert.equal(core.label(listing({title: 'Cozy studio'}), {fixedBeds: 0}), '$1,500');
+assert.equal(core.label(listing({beds: null}), {fixedBeds: 1}), '$1,500');
 assert.equal(core.details(listing({beds: 1, sqft: 1200})), '$1,500 · 1 Br · 1,200 ft²');
 assert.deepEqual({...core.extractAddress(['2001 Olympic Boulevard Apt 4, Santa Monica'])},
   {address: '2001 olympic blvd unit 4', unit: '4'});

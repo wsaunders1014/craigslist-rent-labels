@@ -15,7 +15,7 @@ Independent community project. Not affiliated with Craigslist or Google. This is
 
 ## Features
 
-- Individual labels such as **$2,000 · 1 Br** and **$2,000 · Studio**.
+- Individual labels such as **$2,000 · 1 Br** and **$2,000 · Studio**. When a search is limited to a single bedroom count (for example min and max both set to 1), labels show just the price, and bedrooms appear only on listings that differ.
 - Compact multi-row grouped markers with **+N more**.
 - Deduplication by listing ID, matching title/details, matching leading photo/details, available street address/details, or nearby matching floor-plan offers.
 - Scrollable group previews with listing links and available thumbnails, prices, bedrooms, and square footage.

@@ -40,12 +40,24 @@
   // On "rooms & shares" searches every result is a room, so flagging is noise.
   let lastHref = '';
   let roomsCategory = false;
+  // A search limited to one bedroom count (min_bedrooms equals max_bedrooms).
+  let fixedBeds = null;
+  function readSearch() {
+    if (location.href === lastHref) return;
+    lastHref = location.href;
+    roomsCategory = false;
+    fixedBeds = null;
+    try {
+      const url = new URL(lastHref);
+      roomsCategory = /\/roo(?:\/|$)/.test(url.pathname);
+      const params = url.searchParams;
+      const min = params.get('min_bedrooms');
+      const max = params.get('max_bedrooms');
+      if (min != null && min !== '' && min === max && Number.isInteger(Number(min))) fixedBeds = Number(min);
+    } catch { /* Keep defaults for unexpected URLs. */ }
+  }
   function effectiveRoomFilter() {
-    if (location.href !== lastHref) {
-      lastHref = location.href;
-      try { roomsCategory = /\/roo(?:\/|$)/.test(new URL(lastHref).pathname); }
-      catch { roomsCategory = false; }
-    }
+    readSearch();
     return roomsCategory ? 'off' : roomFilter;
   }
 
@@ -119,7 +131,8 @@
       }
       if (entries.length === 1 && !entries[0].listing.price) { clear(); return; }
       const rows = entries.slice(0, maxRows).map(({listing, flag}) => ({
-        text: flag ? `${core.label(listing)} · ${core.flagLabel(flag)}` : core.label(listing),
+        text: flag ? `${core.label(listing, {fixedBeds})} · ${core.flagLabel(flag)}`
+          : core.label(listing, {fixedBeds}),
         flag,
       }));
       if (entries.length > maxRows) rows.push({text: `+${entries.length - maxRows} more`, flag: null});

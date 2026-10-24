@@ -88,4 +88,12 @@ assert.equal(cluster.el.children[0].textContent,'$1,500 · 1 Br\n$1,550 · Studi
 window.handlers.message({source:window,data:{type:'crl-settings',roomFilter:'nonsense'}});
 sandbox.location.href='https://www.craigslist.org/search/apa';tick();
 assert.equal(cluster.el.children[0].textContent,'$1,550 · Studio','invalid modes are ignored');
-console.log('Passed: aggregate clusters, three-row cap, count changes; Craigslist zero-bedroom getter and explicit studio titles; bedrooms, studios, missing counts, delayed bedrooms; Leaflet assignment, single prices, icon replacement, cluster counts, one-visible-item groups, missing prices, duplicate-hook prevention; room filter tag, dim, hide and off modes, hidden native dots, rooms & shares exemption.');
+// Bedrooms are omitted when the search allows only one count.
+cluster.units=[new Marker({visibleCount:1,searchResult:{pid:6000,price:2000,bedrooms:1,postingTitle:'Sunny unit'}}),new Marker({visibleCount:1,searchResult:{pid:6001,price:1900,bedrooms:0,postingTitle:'Cozy unit'}})];
+sandbox.location.href='https://losangeles.craigslist.org/search/apa?min_bedrooms=1&max_bedrooms=1';tick();
+assert.equal(cluster.el.children[0].textContent,'$2,000\n$1,900 · Studio','fixed count hides matching bedrooms only');
+sandbox.location.href='https://losangeles.craigslist.org/search/apa?min_bedrooms=0&max_bedrooms=1';tick();
+assert.equal(cluster.el.children[0].textContent,'$2,000 · 1 Br\n$1,900 · Studio','ranges keep bedrooms');
+sandbox.location.href='https://losangeles.craigslist.org/search/apa?min_bedrooms=1';tick();
+assert.equal(cluster.el.children[0].textContent,'$2,000 · 1 Br\n$1,900 · Studio','open-ended ranges keep bedrooms');
+console.log('Passed: aggregate clusters, three-row cap, count changes; Craigslist zero-bedroom getter and explicit studio titles; bedrooms, studios, missing counts, delayed bedrooms; Leaflet assignment, single prices, icon replacement, cluster counts, one-visible-item groups, missing prices, duplicate-hook prevention; room filter tag, dim, hide and off modes, hidden native dots, rooms & shares exemption; bedrooms omitted for single-count searches.');
