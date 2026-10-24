@@ -8,7 +8,7 @@
   'use strict';
   const core = globalThis.__rentLabels?.core;
   if (!core) return;
-  const VERSION = '0.7.0';
+  const VERSION = '0.8.0';
   document.documentElement?.setAttribute('data-rent-labels-build', VERSION);
 
   let groupClick = 'list';

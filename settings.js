@@ -12,7 +12,7 @@
     groupRadios.forEach(input => { input.checked = input.value === group; input.disabled = false; });
     const room = ROOM_MODES.includes(settings.roomFilter) ? settings.roomFilter : 'tag';
     roomRadios.forEach(input => { input.checked = input.value === room; input.disabled = false; });
-    status.textContent = 'Changes apply to open Craigslist tabs automatically.';
+    status.textContent = 'Changes apply to open tabs automatically.';
   } catch {
     status.textContent = 'Could not load settings. Reopen this panel to try again.';
   }
@@ -25,7 +25,7 @@
     maxRows.disabled = true;
     try {
       await chrome.storage.local.set({maxRows: value});
-      status.textContent = 'Saved. Applied to open Craigslist tabs.';
+      status.textContent = 'Saved. Applied to open tabs.';
     } catch { status.textContent = 'Could not save. Try again.'; }
     finally { maxRows.disabled = false; }
   });
@@ -35,7 +35,7 @@
       radios.forEach(radio => radio.disabled = true);
       try {
         await chrome.storage.local.set({[key]: input.value});
-        status.textContent = 'Saved. Applied to open Craigslist tabs.';
+        status.textContent = 'Saved. Applied to open tabs.';
       } catch {
         status.textContent = 'Could not save. Reopen this panel to try again.';
       } finally {
