@@ -7,7 +7,8 @@ class Marker {
  getElement(){return this.el}
  setIcon(){this.el.children=[];return this}
 }
-let tick; const window={handlers:{},addEventListener(k,f){this.handlers[k]=f}};vm.runInNewContext(fs.readFileSync(require('path').join(__dirname, 'content.js'),'utf8'),{window,document:{createElement:()=>({children:[],attrs:{},style:{setProperty(){}},setAttribute(k,v){this.attrs[k]=v},getAttribute(k){return this.attrs[k]},append(e){this.children.push(e)},set textContent(v){this.value=v},get textContent(){return this.children.length?this.children.map(x=>x.textContent).join('\n'):this.value}})},setInterval:f=>{tick=f},URL,location:{href:"https://www.craigslist.org/search/apa"},console});
+let tick; const window={handlers:{},addEventListener(k,f){this.handlers[k]=f}};const sandbox=vm.createContext({window,document:{createElement:()=>({children:[],attrs:{},style:{setProperty(){}},setAttribute(k,v){this.attrs[k]=v},getAttribute(k){return this.attrs[k]},append(e){this.children.push(e)},set textContent(v){this.value=v},get textContent(){return this.children.length?this.children.map(x=>x.textContent).join('\n'):this.value}})},setInterval:f=>{tick=f},URL,location:{href:"https://www.craigslist.org/search/apa"},console});
+for(const file of ['src/core.js','src/adapters/craigslist.js'])vm.runInContext(fs.readFileSync(require('path').join(__dirname,file),'utf8'),sandbox,{filename:file});
 window.L={Marker};
 const info={visibleCount:1,searchResult:{price:'$2,575',postingTitle:'Apartment'}};
 const m=new Marker(info);m.events.add();assert.equal(m.el.children[0].textContent,'$2,575');assert(m.el['aria-label'].includes('Apartment'));
@@ -63,4 +64,28 @@ cluster.units=units;
 window.handlers.message({source:window,data:{type:'crl-settings',maxRows:2}});assert.equal(cluster.el.children[0].children.length,3);assert(cluster.el.children[0].textContent.endsWith('+18 more'));
 window.handlers.message({source:window,data:{type:'crl-settings',maxRows:0}});assert(cluster.el.children[0].textContent.endsWith('+18 more'));
 window.handlers.message({source:window,data:{type:'crl-settings',maxRows:20}});assert.equal(cluster.el.children[0].children.length,20);
-console.log('Passed: aggregate clusters, three-row cap, count changes; Craigslist zero-bedroom getter and explicit studio titles; bedrooms, studios, missing counts, delayed bedrooms; Leaflet assignment, single prices, icon replacement, cluster counts, one-visible-item groups, missing prices, duplicate-hook prevention.');
+// Possible rooms and coliving.
+const roomUnits=[
+ new Marker({visibleCount:1,searchResult:{pid:5000,price:1500,bedrooms:1,postingTitle:'Private room in 3br house',url:'https://www.craigslist.org/view/a'}}),
+ new Marker({visibleCount:1,searchResult:{pid:5001,price:1550,bedrooms:0,postingTitle:'Sunny studio',url:'https://www.craigslist.org/view/b'}})];
+cluster.units=roomUnits;tick();
+assert.equal(cluster.el.children[0].textContent,'$1,550 · Studio\n$1,500 · 1 Br · Room?','tag mode lists possible rooms last');
+assert.equal(cluster.el.children[0].children[1].className,'crl-listing-row crl-flagged');
+window.handlers.message({source:window,data:{type:'crl-settings',roomFilter:'dim'}});
+assert.equal(cluster.el.children[0].children[1].className,'crl-listing-row crl-flagged crl-dimmed');
+window.handlers.message({source:window,data:{type:'crl-settings',roomFilter:'hide'}});
+assert.equal(cluster.el.children[0].textContent,'$1,550 · Studio');
+cluster.el.handlers.click({type:'click',preventDefault(){},stopImmediatePropagation(){}});
+assert.equal(popupPanel.children[0].textContent,'1 offer · 1 possible room hidden');
+const loneRoom=new Marker({visibleCount:1,searchResult:{pid:5002,price:1400,postingTitle:'Coliving suite, all utilities'}});loneRoom.events.add();
+assert.equal(loneRoom.el.children.length,0);assert(loneRoom.el.classes.has('crl-hidden-marker'),'hidden rooms hide the native dot');
+window.handlers.message({source:window,data:{type:'crl-settings',roomFilter:'off'}});
+assert.equal(cluster.el.children[0].textContent,'$1,500 · 1 Br\n$1,550 · Studio');
+assert(!loneRoom.el.classes.has('crl-hidden-marker'));assert.equal(loneRoom.el.children[0].textContent,'$1,400');
+window.handlers.message({source:window,data:{type:'crl-settings',roomFilter:'hide'}});
+sandbox.location.href='https://losangeles.craigslist.org/search/santa-monica-ca/roo';tick();
+assert.equal(cluster.el.children[0].textContent,'$1,500 · 1 Br\n$1,550 · Studio','rooms & shares searches never filter');
+window.handlers.message({source:window,data:{type:'crl-settings',roomFilter:'nonsense'}});
+sandbox.location.href='https://www.craigslist.org/search/apa';tick();
+assert.equal(cluster.el.children[0].textContent,'$1,550 · Studio','invalid modes are ignored');
+console.log('Passed: aggregate clusters, three-row cap, count changes; Craigslist zero-bedroom getter and explicit studio titles; bedrooms, studios, missing counts, delayed bedrooms; Leaflet assignment, single prices, icon replacement, cluster counts, one-visible-item groups, missing prices, duplicate-hook prevention; room filter tag, dim, hide and off modes, hidden native dots, rooms & shares exemption.');

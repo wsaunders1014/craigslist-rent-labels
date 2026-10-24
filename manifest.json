@@ -1,22 +1,37 @@
 {
   "manifest_version": 3,
   "name": "Craigslist Rent Labels",
-  "version": "0.6.0",
-  "description": "Show rent on individual Craigslist rental map markers.",
+  "version": "0.7.0",
+  "description": "Show rent and bedrooms on Craigslist rental map markers, and flag likely rooms and coliving.",
   "content_scripts": [
     {
       "matches": [
-        "https://*.craigslist.org/search/*"
+        "https://*.craigslist.org/search/apa*",
+        "https://*.craigslist.org/search/hhh*",
+        "https://*.craigslist.org/search/roo*",
+        "https://*.craigslist.org/search/sub*",
+        "https://*.craigslist.org/search/*/apa*",
+        "https://*.craigslist.org/search/*/hhh*",
+        "https://*.craigslist.org/search/*/roo*",
+        "https://*.craigslist.org/search/*/sub*"
       ],
       "js": [
-        "content.js"
+        "src/core.js",
+        "src/adapters/craigslist.js"
       ],
       "run_at": "document_start",
       "world": "MAIN"
     },
     {
       "matches": [
-        "https://*.craigslist.org/search/*"
+        "https://*.craigslist.org/search/apa*",
+        "https://*.craigslist.org/search/hhh*",
+        "https://*.craigslist.org/search/roo*",
+        "https://*.craigslist.org/search/sub*",
+        "https://*.craigslist.org/search/*/apa*",
+        "https://*.craigslist.org/search/*/hhh*",
+        "https://*.craigslist.org/search/*/roo*",
+        "https://*.craigslist.org/search/*/sub*"
       ],
       "css": [
         "styles.css"

@@ -36,3 +36,9 @@
 .crl-preview-item > span { min-width: 0; }
 .crl-preview-item strong, .crl-preview-item span > span { display: block; }
 .crl-preview-item:hover { background: #f6f0ff; }
+
+/* Possible rooms and coliving. */
+.crl-price-label > .crl-flagged { color: #8a5a00; }
+.crl-price-label > .crl-dimmed, .crl-preview-item.crl-dimmed { opacity: .45; }
+.crl-preview-item .crl-flag { display: block; font-style: normal; font-size: 11px; color: #8a5a00; }
+.crl-hidden-marker { display: none !important; }
