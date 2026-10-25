@@ -162,18 +162,22 @@
   const COLIVING_PATTERNS = [
     [/\bco[- ]?living\b/, 'mentions coliving'],
     [/\bco[- ]?live\b/, 'mentions coliving'],
-    [/\bpadsplit\b/, 'coliving operator'],
+    [/\b(?:padsplit|tripalink)\b/, 'coliving operator'],
   ];
   const ROOM_PATTERNS = [
     [/\b(?:private|furnished|shared|single|spare)\s+(?:bed)?rooms?\b(?!\s+(?:apartment|apt|unit|home|house|condo))/, 'private or shared room'],
     [/\brooms?\s+(?:for\s+rent|available|for\s+lease)\b/, 'room for rent'],
-    // "Room in a 3br house", but not "1 bedroom in a quiet building".
-    [/(?<!(?:^|[^$\d,.])(?:[1-6]|one|two|three|four|five|six)[\s-]*)\b(?:bed)?room\s+in\s+(?:a|an|my|our|the|shared|large|big)?\s*(?:[a-z-]+\s+){0,3}?(?:\d\s*(?:br|bd|bed|bedroom)s?|house|home|apartment|apt|townhouse|condo|flat)\b/, 'room in a larger unit'],
+    // "Room in a 3br house", but not "1 bedroom in a quiet building" or
+    // amenity phrases like "laundry room in each apartment".
+    [/(?<!(?:^|[^$\d,.])(?:[1-6]|one|two|three|four|five|six)[\s-]*)(?<!\b(?:laundry|living|dining|family|great|game|media|fitness|club|community|mail|package|storage|study|bonus|rec|utility|powder)\s)\b(?:bed)?room\s+in\s+(?:a|an|my|our|the|shared|large|big)?\s*(?:[a-z-]+\s+){0,3}?(?:\d\s*(?:br|bd|bed|bedroom)s?|house|home|apartment|apt|townhouse|condo|flat)\b/, 'room in a larger unit'],
     [/(?<!\bno\s)\broom ?mates?\b/, 'mentions roommates'],
     [/\bhouse ?mates?\b/, 'mentions housemates'],
     // Kitchens and baths, not amenity phrases like "shared laundry" or "shared spaces".
     [/\bshared\s+(?:kitchen|bath|bathroom|living\s+room|house|home|apartment|apt)\b/, 'shared kitchen, bath or home'],
     [/\b(?:rent|renting)\s+(?:a|one|1)\s+(?:bed)?room\b/, 'room for rent'],
+    // Student and coliving buildings often price and lease each bed separately.
+    [/(?:\bper|\/)\s*(?:bed|person|room)\b(?!\s*(?:apartment|apt|unit|home|house|condo))/, 'priced per bed or person'],
+    [/\b(?:individual|by[- ]the[- ]bed|per[- ]bed)\s+leas/, 'individual leases'],
   ];
   const MIN_STUDIO_SQFT = 150;
 

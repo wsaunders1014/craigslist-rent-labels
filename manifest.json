@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Craigslist Rent Labels",
-  "version": "0.7.0",
-  "description": "Show rent and bedrooms on Craigslist rental map markers, and flag likely rooms and coliving.",
+  "version": "0.8.0",
+  "description": "Show rent and bedrooms on Craigslist rental maps, and flag likely rooms and coliving on Craigslist and apartments.com.",
   "content_scripts": [
     {
       "matches": [
@@ -40,6 +40,19 @@
       "js": [
         "settings-bridge.js"
       ]
+    },
+    {
+      "matches": [
+        "https://www.apartments.com/*"
+      ],
+      "js": [
+        "src/core.js",
+        "src/adapters/apartments.js"
+      ],
+      "css": [
+        "styles.css"
+      ],
+      "run_at": "document_idle"
     }
   ],
   "permissions": [
