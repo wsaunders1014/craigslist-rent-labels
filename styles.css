@@ -45,23 +45,19 @@
 
 /* apartments.com result cards. */
 .crl-ac-flagged { position: relative; }
-/* Tint the whole card in the badge color; clears on hover so the card reads normally. */
+/* Tint the whole card and show why it was flagged; clears on hover so the card reads normally. */
 .crl-ac-flagged::after {
-  content: ''; position: absolute; inset: 0; z-index: 4;
+  content: attr(data-crl-flag); position: absolute; inset: 0; z-index: 4;
+  display: flex; align-items: center; justify-content: center;
+  box-sizing: border-box; padding: 16px; text-align: center; white-space: pre-line;
   border-radius: inherit; background: rgb(226 176 74 / .45);
+  color: #3d2800; font: 700 16px/1.35 Arial, sans-serif;
+  text-shadow: 0 0 2px #fff, 0 0 8px #fff;
   pointer-events: none; transition: opacity .15s;
 }
 .crl-ac-flagged:hover::after { opacity: 0; }
 .crl-ac-flagged.crl-dimmed { opacity: .45; transition: opacity .15s; }
 .crl-ac-flagged.crl-dimmed:hover { opacity: 1; }
-.crl-ac-flag {
-  position: absolute; top: 8px; left: 8px; z-index: 5;
-  max-width: calc(100% - 16px); box-sizing: border-box;
-  padding: 3px 8px; border: 1px solid #e2b04a; border-radius: 9px;
-  background: #fff4d6; color: #7a4f00; box-shadow: 0 1px 4px #0002;
-  font: 600 12px/16px Arial, sans-serif;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
 .crl-hidden-placard { display: none !important; }
 .crl-ac-notice {
   position: fixed; left: 16px; bottom: 16px; z-index: 2147483646;

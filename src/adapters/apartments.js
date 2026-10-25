@@ -2,8 +2,9 @@
  * apartments.com adapter. Reads the search result cards ("placards") already
  * on the page, converts each into a shared Listing (see src/core.js), and
  * tags, fades, or hides possible rooms and coliving. Map pins whose listing
- * has a card on the page become price and bedroom labels, colored when the
- * listing is a possible room.
+ * has had a card on the page become price and bedroom labels, colored when
+ * the listing is a possible room. Other pins show rent only, from the page's
+ * own search responses (see src/adapters/apartments-page.js).
  *
  * Runs in the extension's isolated world and reads settings directly from
  * chrome.storage. No requests, analytics, or page data leaves the browser.
@@ -76,16 +77,13 @@
       const rent = parseRentText(textOf(el.querySelector(SELECTORS.fallbackPrice)));
       if (beds || rent) options.push({beds, rent});
     }
-    // Card text minus anything this extension added.
-    let text = el.textContent || '';
-    for (const added of el.querySelectorAll('.crl-ac-flag')) text = text.replace(added.textContent || '', ' ');
     return {
       id,
       url,
       title: textOf(el.querySelector(SELECTORS.title)),
       address: textOf(el.querySelector(SELECTORS.address)),
       options,
-      text: core.normalize(text).slice(0, MAX_TEXT),
+      text: core.normalize(el.textContent).slice(0, MAX_TEXT),
     };
   }
 
@@ -141,34 +139,40 @@
 
   let roomFilter = 'tag';
   let revealed = false;
+  // Pin label and flag by listing ID. Kept after a card leaves the page,
+  // because the results list renders only some cards while the map shows every pin.
+  const seen = new Map();
+  // Rent for every pin on the map, from the page hook. Used when no card has been seen.
+  const pinRents = new Map();
+  const rentOnly = pin => pin && {text: core.formatPrice(pin.minRent) + (pin.maxRent > pin.minRent ? '+' : ''), flag: null};
   const roomsSearch = /rooms?-for-rent|roommates?|shared-housing/i.test(location.pathname);
 
-  /** Tag, fade or hide one card. Returns what its map pin should show. */
+  /** Tag, fade or hide one card. Returns its pin label, its flag in any mode, and whether it is hidden. */
   function render(el, mode) {
     const fields = readPlacard(el);
-    const flag = fields && mode !== 'off' ? core.classify(toListing(fields)) : null;
+    const found = fields ? core.classify(toListing(fields)) : null;
+    const flag = mode !== 'off' ? found : null;
     const hide = !!flag && mode === 'hide' && !revealed;
-    const result = fields && {key: listingKey(fields), text: pinLabel(fields), flag, dim: !!flag && mode === 'dim', hide};
+    const result = fields && {key: listingKey(fields), text: pinLabel(fields), flag: found, hide};
     const state = flag ? `${mode}|${revealed}|${flag.type}|${flag.reasons.join(',')}` : 'clean';
     if (el.getAttribute('data-crl-state') === state) return result;
     el.setAttribute('data-crl-state', state);
     el.classList.remove('crl-ac-flagged', 'crl-dimmed', 'crl-hidden-placard');
-    el.querySelectorAll('.crl-ac-flag').forEach(badge => badge.remove());
+    el.removeAttribute('data-crl-flag');
     if (!flag) return result;
     el.classList.add('crl-ac-flagged');
     if (mode === 'dim') el.classList.add('crl-dimmed');
     if (hide) el.classList.add('crl-hidden-placard');
-    const badge = document.createElement('div');
-    badge.className = 'crl-ac-flag';
-    badge.textContent = `${core.flagLabel(flag)} ${flag.reasons.join(', ')}`;
-    badge.title = 'Flagged by Rent Labels. Detection uses wording, so it can be wrong.';
-    el.prepend(badge);
+    // Shown centered in the card's overlay (see styles.css).
+    el.setAttribute('data-crl-flag', `${core.flagLabel(flag)}\n${flag.reasons.join(', ')}`);
     return result;
   }
 
   /** Replace a map pin's look with a label. Pins without a card on the page keep the native pin. */
-  function renderPin(pin, info) {
-    const state = info?.text ? `${info.text}|${info.flag?.type ?? ''}|${info.dim}|${info.hide}` : 'clean';
+  function renderPin(pin, entry, mode) {
+    const flag = mode !== 'off' ? entry?.flag : null;
+    const info = entry && {text: entry.text, flag, dim: !!flag && mode === 'dim', hide: !!flag && mode === 'hide' && !revealed};
+    const state = info?.text ? `${info.text}|${flag?.type ?? ''}|${info.dim}|${info.hide}` : 'clean';
     const current = pin.querySelector('.crl-ac-pin-label');
     if (pin.getAttribute('data-crl-state') === state && !current === (state === 'clean')) return;
     pin.setAttribute('data-crl-state', state);
@@ -202,16 +206,16 @@
   function scan() {
     const mode = roomsSearch ? 'off' : roomFilter;
     let hidden = 0;
-    const cards = new Map();
     for (const el of document.querySelectorAll(SELECTORS.placard)) {
       try {
         const result = render(el, mode);
         if (result?.hide) hidden++;
-        if (result?.key) cards.set(result.key, result);
+        if (result?.key) seen.set(result.key, result);
       } catch (error) { console.debug('[Rent Labels] Card format not supported', error); }
     }
     for (const pin of document.querySelectorAll(SELECTORS.pin)) {
-      try { renderPin(pin, cards.get(pin.getAttribute('data-id'))); }
+      const id = pin.getAttribute('data-id');
+      try { renderPin(pin, seen.get(id) || rentOnly(pinRents.get(id)), mode); }
       catch (error) { console.debug('[Rent Labels] Map pin format not supported', error); }
     }
     showNotice(hidden);
@@ -224,10 +228,24 @@
     pending = setTimeout(() => { pending = 0; scan(); }, 150);
   };
   // Ignore mutations made only by this extension, so rendering never loops.
-  const ownNode = node => ['crl-ac-flag', 'crl-ac-notice', 'crl-ac-pin-label'].some(name => node.classList?.contains(name));
+  // data-id changes catch map pins reused for another listing; this extension never sets it.
+  const ownNode = node => ['crl-ac-notice', 'crl-ac-pin-label'].some(name => node.classList?.contains(name));
+  const ownMutation = mutation => mutation.type === 'childList'
+    && [...mutation.addedNodes, ...mutation.removedNodes].every(ownNode);
   new MutationObserver(mutations => {
-    if (!mutations.every(mutation => [...mutation.addedNodes, ...mutation.removedNodes].every(ownNode))) schedule();
-  }).observe(document.documentElement, {childList: true, subtree: true});
+    if (!mutations.every(ownMutation)) schedule();
+  }).observe(document.documentElement, {childList: true, subtree: true, attributes: true, attributeFilter: ['data-id']});
+
+  window.addEventListener('crl-ac-pins', event => {
+    try {
+      for (const pin of JSON.parse(event.detail)) {
+        if (typeof pin?.listingKey === 'string' && core.parseAmount(pin.minRent)) pinRents.set(pin.listingKey, pin);
+      }
+    } catch { return; }
+    schedule();
+  });
+  // The page hook may have seen search responses before this script loaded.
+  window.dispatchEvent(new CustomEvent('crl-ac-pins-request'));
 
   const apply = value => {
     if (core.ROOM_FILTER_MODES.includes(value) && value !== roomFilter) {

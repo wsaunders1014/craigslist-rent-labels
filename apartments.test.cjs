@@ -15,6 +15,7 @@ function el(tag, {classes = [], attrs = {}, text = ''} = {}, children = []) {
     get className() { return [...node.classes].join(' '); },
     set title(value) { node.attrs.title = value; },
     getAttribute: name => name in node.attrs ? node.attrs[name] : null,
+    removeAttribute: name => { delete node.attrs[name]; },
     setAttribute: (name, value) => { node.attrs[name] = String(value); },
     get textContent() { return [node.text, ...node.children.map(child => child.textContent)].filter(Boolean).join(' '); },
     set textContent(value) { node.text = value; node.children = []; },
@@ -55,8 +56,14 @@ function placard({id, title, address, options = [], extra = ''}) {
 const body = el('body');
 let observerCallback;
 const storageListeners = [];
+const windowListeners = {}, windowEvents = [];
+const fakeWindow = {
+  addEventListener: (type, fn) => (windowListeners[type] ||= []).push(fn),
+  dispatchEvent: event => { windowEvents.push(event.type); (windowListeners[event.type] || []).forEach(fn => fn(event)); },
+};
 const sandbox = vm.createContext({
-  console, setTimeout: (fn) => { fn(); return 1; }, location: {pathname: '/los-angeles-ca/'},
+  console, setTimeout: (fn) => { fn(); return 0; }, location: {pathname: '/los-angeles-ca/'},
+  window: fakeWindow, CustomEvent: class { constructor(type, init = {}) { this.type = type; this.detail = init.detail; } },
   document: {body, documentElement: body, createElement: tag => el(tag), querySelectorAll: selector => body.querySelectorAll(selector)},
   MutationObserver: class { constructor(callback) { observerCallback = callback; } observe() {} },
   chrome: {storage: {local: {get: async () => ({roomFilter: 'tag'})}, onChanged: {addListener: fn => storageListeners.push(fn)}}},
@@ -89,6 +96,11 @@ assert.equal(listing.address, '3150 wilshire blvd');
 assert.equal(sandbox.__rentLabels.core.classify(listing), null, 'amenity text is not a room signal');
 assert.equal(ac.toListing(ac.readPlacard(placard({id: 'a9', title: 'X', address: '', options: [['2 Beds', '$3,000']]}))).beds, 2);
 
+// Coliving operators named only in the title, as on a captured October 2026 card.
+const purdue = placard({id: 'ycsrzss', title: 'Purdue by Category, Los Angeles, CA', address: '2460 Purdue Ave, Los Angeles, CA 90064',
+  options: [['1 Bed', '$1,188+']], extra: 'Kitchen, In Unit Washer & Dryer, Disposal, Microwave, Oven, Elevator, Furnished'});
+assert.equal(sandbox.__rentLabels.core.classify(ac.toListing(ac.readPlacard(purdue))).type, 'coliving');
+
 // Fallback template without bedRentBox rows.
 const old = el('article', {classes: ['placard'], attrs: {'data-listingid': 'o1'}}, [
   el('div', {classes: ['property-pricing'], text: '$1,450 - $1,600'}), el('div', {classes: ['property-beds'], text: 'Studio'})]);
@@ -110,10 +122,11 @@ assert.equal(ac.pinLabel(ac.readPlacard(placard({id: 'p1', title: 'X', address: 
 assert.equal(ac.pinLabel(ac.readPlacard(placard({id: 'p2', title: 'X', address: '', options: [['1 - 3 Beds', 'Call for Rent']]}))), '1–3 Br');
 (async () => {
   await new Promise(resolve => setImmediate(resolve));
-  const flag = node => node.querySelector('.crl-ac-flag');
+  const flag = node => node.getAttribute('data-crl-flag');
   assert.equal(flag(studio), null);
-  assert(flag(coliving).textContent.startsWith('Co-living? coliving operator'), flag(coliving).textContent);
-  assert(flag(perBed).textContent.includes('priced per bed or person'));
+  assert(flag(coliving).startsWith('Co-living?\ncoliving operator'), flag(coliving));
+  assert(flag(perBed).includes('priced per bed or person'));
+  assert.equal(coliving.children.length, 5, 'no badge element is added to the card');
   assert(coliving.classList.contains('crl-ac-flagged') && !coliving.classList.contains('crl-hidden-placard'));
 
   // Pins with a card on the page get labels; flagged ones are colored; others stay native.
@@ -124,9 +137,9 @@ assert.equal(ac.pinLabel(ac.readPlacard(placard({id: 'p2', title: 'X', address: 
   assert(pinLabel(colivingPin).classList.contains('crl-ac-pin-flagged'));
   assert.equal(pinLabel(otherPin), null, 'pins without a card keep the native pin');
 
-  // Re-scanning is stable: one badge, and the badge text is not re-read as card text.
-  observerCallback([{addedNodes: [el('div')], removedNodes: []}]);
-  assert.equal(coliving.querySelectorAll('.crl-ac-flag').length, 1);
+  // Re-scanning is stable.
+  observerCallback([{type: 'childList', addedNodes: [el('div')], removedNodes: []}]);
+  assert(flag(coliving).startsWith('Co-living?'));
   assert.equal(colivingPin.querySelectorAll('.crl-ac-pin-label').length, 1);
 
   const change = value => storageListeners.forEach(fn => fn({roomFilter: {newValue: value}}, 'local'));
@@ -144,13 +157,39 @@ assert.equal(ac.pinLabel(ac.readPlacard(placard({id: 'p2', title: 'X', address: 
 
   notice.onclick();
   assert(!coliving.classList.contains('crl-hidden-placard'), 'Show reveals hidden cards');
-  assert(coliving.querySelector('.crl-ac-flag'), 'revealed cards stay tagged');
+  assert(flag(coliving), 'revealed cards stay tagged');
   assert.equal(body.querySelector('.crl-ac-notice'), null);
 
   change('off');
-  assert.equal(coliving.querySelector('.crl-ac-flag'), null);
+  assert.equal(flag(coliving), null);
   assert(!coliving.classList.contains('crl-ac-flagged'));
   assert(!pinLabel(colivingPin).classList.contains('crl-ac-pin-flagged'), 'off keeps pin labels but drops the room color');
 
-  console.log('Passed apartments.com: rent and bed parsing, floor-plan cards, fallback template, amenity text, tag, dim, hide with notice and reveal, off, stable re-scans, map pin labels and room colors.');
+  // The results list drops cards the map still shows; their pins keep labels and follow setting changes.
+  coliving.remove();
+  observerCallback([{type: 'childList', addedNodes: [], removedNodes: [coliving]}]);
+  assert.equal(pinLabel(colivingPin).textContent, '$1,150+ · Studio–4 Br', 'pin keeps its label after its card leaves');
+  change('hide');
+  assert(pinLabel(colivingPin).classList.contains('crl-ac-pin-hidden'), 'remembered pins follow the hide setting');
+  change('tag');
+  assert(pinLabel(colivingPin).classList.contains('crl-ac-pin-flagged') && !pinLabel(colivingPin).classList.contains('crl-ac-pin-hidden'));
+
+  // A pin reused for another listing is relabeled.
+  studioPin.setAttribute('data-id', 'c1');
+  observerCallback([{type: 'attributes', attributeName: 'data-id', target: studioPin, addedNodes: [], removedNodes: []}]);
+  assert.equal(pinLabel(studioPin).textContent, '$1,150+ · Studio–4 Br');
+  assert(pinLabel(studioPin).classList.contains('crl-ac-pin-flagged'));
+
+  // Pins for listings on other result pages show rent from the page's search data.
+  assert(windowEvents.includes('crl-ac-pins-request'), 'asks the page hook for pins it already saw');
+  const sendPins = pins => fakeWindow.dispatchEvent({type: 'crl-ac-pins', detail: JSON.stringify(pins)});
+  sendPins([{listingKey: 'zz9', minRent: 1745, maxRent: 1795}, {listingKey: 'c1', minRent: 900, maxRent: 900}, {listingKey: 'bad'}]);
+  assert.equal(pinLabel(otherPin).textContent, '$1,745+', 'rent-only label for a pin without a card');
+  assert(!pinLabel(otherPin).classList.contains('crl-ac-pin-flagged'));
+  assert.equal(pinLabel(colivingPin).textContent, '$1,150+ · Studio–4 Br', 'card data wins over search data');
+  sendPins([{listingKey: 'zz9', minRent: 1600, maxRent: 1600}]);
+  assert.equal(pinLabel(otherPin).textContent, '$1,600');
+  sendPins('not json');
+
+  console.log('Passed apartments.com: rent and bed parsing, floor-plan cards, fallback template, amenity text, tag, dim, hide with notice and reveal, off, stable re-scans, map pin labels and room colors, remembered pins after cards leave, reused pins, rent-only pins from search data.');
 })().catch(error => { console.error(error); process.exit(1); });
