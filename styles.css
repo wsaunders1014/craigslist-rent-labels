@@ -45,17 +45,21 @@
 
 /* Result cards (apartments.com, Zillow). */
 .crl-ac-flagged { position: relative; }
-/* Tint the whole card and show why it was flagged; clears on hover so the card reads normally. */
+/* Tint the whole card, with why it was flagged on a pill in the middle; both clear on hover. */
 .crl-ac-flagged::after {
-  content: attr(data-crl-flag); position: absolute; inset: 0; z-index: 4;
-  display: flex; align-items: center; justify-content: center;
-  box-sizing: border-box; padding: 16px; text-align: center; white-space: pre-line;
+  content: ''; position: absolute; inset: 0; z-index: 4;
   border-radius: inherit; background: rgb(226 176 74 / .45);
-  color: #3d2800; font: 700 16px/1.35 Arial, sans-serif;
-  text-shadow: 0 0 2px #fff, 0 0 8px #fff;
   pointer-events: none; transition: opacity .15s;
 }
-.crl-ac-flagged:hover::after { opacity: 0; }
+.crl-ac-flagged::before {
+  content: attr(data-crl-flag); position: absolute; left: 50%; top: 50%; z-index: 5;
+  transform: translate(-50%, -50%); max-width: calc(100% - 32px); box-sizing: border-box;
+  padding: 8px 14px; border: 1px solid #e2b04a; border-radius: 10px;
+  background: #fff8e6; color: #3d2800; box-shadow: 0 2px 8px #0003;
+  font: 700 15px/1.35 Arial, sans-serif; text-align: center; white-space: pre-line;
+  pointer-events: none; transition: opacity .15s;
+}
+.crl-ac-flagged:hover::after, .crl-ac-flagged:hover::before { opacity: 0; }
 .crl-ac-flagged.crl-dimmed { opacity: .45; transition: opacity .15s; }
 .crl-ac-flagged.crl-dimmed:hover { opacity: 1; }
 .crl-hidden-placard { display: none !important; }

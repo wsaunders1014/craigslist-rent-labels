@@ -1,8 +1,14 @@
 {
   "manifest_version": 3,
   "name": "Rent Labels",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "Show rent and bedrooms on Craigslist, apartments.com and Zillow rental maps, and flag likely rooms and coliving.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "background": {
     "service_worker": "background.js"
   },
@@ -96,7 +102,11 @@
   ],
   "action": {
     "default_title": "Rent Labels settings",
-    "default_popup": "settings.html"
+    "default_popup": "settings.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
   },
   "options_ui": {
     "page": "settings.html",
