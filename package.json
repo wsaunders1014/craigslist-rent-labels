@@ -4,6 +4,6 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "test": "node --check src/core.js && node --check src/adapters/craigslist.js && node --check src/adapters/apartments.js && node --check settings.js && node --check settings-bridge.js && node core.test.cjs && node apartments.test.cjs && node extension.test.cjs"
+    "test": "node --check src/core.js && node --check src/adapters/craigslist.js && node --check src/adapters/apartments.js && node --check src/adapters/apartments-page.js && node --check settings.js && node --check settings-bridge.js && node core.test.cjs && node apartments.test.cjs && node apartments-page.test.cjs && node extension.test.cjs"
   }
 }

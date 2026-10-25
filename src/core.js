@@ -162,11 +162,16 @@
   const COLIVING_PATTERNS = [
     [/\bco[- ]?living\b/, 'mentions coliving'],
     [/\bco[- ]?live\b/, 'mentions coliving'],
-    [/\b(?:padsplit|tripalink)\b/, 'coliving operator'],
+    [/\b(?:padsplit|tripalink|clg)\b/, 'coliving operator'],
+    // Category Company buildings are named "<Street> by Category"; "category" alone is too common.
+    [/\bby category\b/, 'coliving operator'],
   ];
   const ROOM_PATTERNS = [
     [/\b(?:private|furnished|shared|single|spare)\s+(?:bed)?rooms?\b(?!\s+(?:apartment|apt|unit|home|house|condo))/, 'private or shared room'],
     [/\brooms?\s+(?:for\s+rent|available|for\s+lease)\b/, 'room for rent'],
+    // Coliving sells bedrooms as "private suites". Bare "suite" is too common in
+    // whole units ("primary suite", "junior suite") and addresses ("Suite 200").
+    [/\b(?:private|shared)\s+(?:bed(?:room)?\s+)?suites?\b/, 'private or shared suite'],
     // "Room in a 3br house", but not "1 bedroom in a quiet building" or
     // amenity phrases like "laundry room in each apartment".
     [/(?<!(?:^|[^$\d,.])(?:[1-6]|one|two|three|four|five|six)[\s-]*)(?<!\b(?:laundry|living|dining|family|great|game|media|fitness|club|community|mail|package|storage|study|bonus|rec|utility|powder)\s)\b(?:bed)?room\s+in\s+(?:a|an|my|our|the|shared|large|big)?\s*(?:[a-z-]+\s+){0,3}?(?:\d\s*(?:br|bd|bed|bedroom)s?|house|home|apartment|apt|townhouse|condo|flat)\b/, 'room in a larger unit'],

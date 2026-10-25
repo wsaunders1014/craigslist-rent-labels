@@ -39,9 +39,14 @@ const flagged = [
   ['Coliving: all-inclusive private bedrooms', 'coliving'],
   ['PadSplit room, move in today', 'coliving'],
   ['Tripalink Hoover St', 'coliving'],
+  ['G8 by CLG', 'coliving'],
+  ['Purdue by Category', 'coliving'],
   ['$1,200/bed, all utilities included', 'room'],
   ['Studio - 4 Beds, priced per person', 'room'],
   ['Individual leases available near USC', 'room'],
+  ['Private suite with all utilities included', 'room'],
+  ['Private bedroom suites near UCLA', 'room'],
+  ['Shared suite, furnished, move in now', 'room'],
 ];
 for (const [title, type] of flagged) {
   const flag = core.classify(listing({title}));
@@ -67,6 +72,10 @@ const clean = [
   'Fitness room in the apartment complex',
   'Pet friendly, $50 per bedroom deposit',
   'Studio, 1 Bed, 2 Beds available',
+  'Spacious 2BR with primary suite',
+  'Master suite with walk-in closet',
+  'Junior suite studio near the beach',
+  'Leasing office at 100 Main St Suite 200',
 ];
 for (const title of clean) assert.equal(core.classify(listing({title})), null, `should not flag: ${title}`);
 assert.equal(core.classify(listing({title: 'Studio', sqft: 220, beds: 0})), null);

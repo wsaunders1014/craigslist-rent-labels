@@ -46,6 +46,16 @@
         "https://www.apartments.com/*"
       ],
       "js": [
+        "src/adapters/apartments-page.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "https://www.apartments.com/*"
+      ],
+      "js": [
         "src/core.js",
         "src/adapters/apartments.js"
       ],
