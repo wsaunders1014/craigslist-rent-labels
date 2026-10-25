@@ -43,7 +43,7 @@
 .crl-preview-item .crl-flag { display: block; font-style: normal; font-size: 11px; color: #8a5a00; }
 .crl-hidden-marker { display: none !important; }
 
-/* apartments.com result cards. */
+/* Result cards (apartments.com, Zillow). */
 .crl-ac-flagged { position: relative; }
 /* Tint the whole card and show why it was flagged; clears on hover so the card reads normally. */
 .crl-ac-flagged::after {
@@ -91,3 +91,16 @@
 gmp-advanced-marker:has(.crl-ac-pin-hidden) { display: none !important; }
 gmp-advanced-marker:has(.crl-ac-pin-label):hover { z-index: 1000000 !important; }
 .ap-marker:hover > .crl-ac-pin-label { filter: brightness(1.15); }
+
+/* Zillow map pins: the label sits above the pin's location, over Zillow's own dot or pill. */
+.streamlined-marker-container:has(> .crl-zl-pin-label) > :not(.crl-zl-pin-label) { visibility: hidden; }
+.crl-ac-pin-label.crl-zl-pin-label {
+  position: absolute; left: 50%; top: 50%; margin: 0;
+  transform: translate(-50%, calc(-100% - 6px));
+}
+/* Zillow blue instead of green; possible rooms stay yellow. */
+.crl-zl-pin-label:not(.crl-ac-pin-flagged) { border-color: #0050c2; background: #006aff; }
+.crl-zl-pin-label:not(.crl-ac-pin-flagged)::after { border-top-color: #006aff; }
+.streamlined-marker-container:has(> .crl-zl-pin-label):hover { z-index: 1000000 !important; }
+.streamlined-marker-container:has(> .crl-zl-pin-label):hover > .crl-zl-pin-label { filter: brightness(1.15); }
+.streamlined-marker-container:has(.crl-ac-pin-hidden) { display: none !important; }

@@ -1,0 +1,17 @@
+.welcome { max-width: 560px; margin: 0 auto; padding: 32px 20px 40px; }
+.welcome h1 { font-size: 24px; margin-bottom: 8px; }
+.welcome h2 { font-size: 15px; margin: 22px 0 6px; }
+.welcome .lead { font-size: 15px; margin: 0 0 4px; }
+.welcome ul { margin: 0; padding-left: 20px; }
+.welcome li + li { margin-top: 6px; }
+.welcome p { margin: 8px 0; }
+.welcome a { color: #7543a3; }
+.welcome .donate { margin-top: 26px; }
+.welcome .donate h2 { margin-top: 0; }
+.welcome .donate p { margin: 0 0 12px; }
+.welcome a.donate-button { color: #2c1f00; }
+#close {
+  margin-top: 22px; padding: 8px 18px; border: 0; border-radius: 6px;
+  background: #7543a3; color: #fff; font: 600 14px system-ui, sans-serif; cursor: pointer;
+}
+#close:hover { background: #5f3488; }
