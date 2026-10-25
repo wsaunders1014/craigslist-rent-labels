@@ -26,4 +26,4 @@ If this policy changes, the updated version will be published at this address wi
 
 ## Contact
 
-Questions about this policy: open an issue at https://github.com/wsaunders1014/craigslist-rent-labels/issues.
+Questions about this policy: email 09z6gcml@anonaddy.me, or open an issue at https://github.com/wsaunders1014/craigslist-rent-labels/issues.
