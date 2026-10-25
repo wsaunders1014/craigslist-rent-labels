@@ -6,6 +6,7 @@
 <title>Rent Labels settings</title>
 <link rel="stylesheet" href="settings.css">
 <script src="settings.js" defer></script>
+<script src="links.js" defer></script>
 </head>
 <body>
 <main>
@@ -18,7 +19,7 @@
 <p>Use Craigslist’s original map behavior.</p>
 </fieldset>
 <fieldset>
-<legend>Possible rooms and coliving (Craigslist and apartments.com)</legend>
+<legend>Possible rooms and coliving (Craigslist, apartments.com and Zillow)</legend>
 <label><input type="radio" name="roomFilter" value="tag" disabled> Tag them</label>
 <p>Mark listings that look like a single room or coliving, and list them last.</p>
 <label><input type="radio" name="roomFilter" value="dim" disabled> Fade them</label>
@@ -32,6 +33,11 @@
 <input id="maxRows" type="number" min="1" max="20" step="1" value="3" disabled>
 <p class="hint">Show 1–20 properties before “+N more.” Full previews show all offers.</p>
 <p id="status" role="status">Loading settings…</p>
+<section class="donate" data-donate-block>
+<h2>Support Rent Labels</h2>
+<p>Free and made by one person. Donations keep it working as these sites change.</p>
+<a class="donate-button" data-donate target="_blank" rel="noopener">Donate!</a>
+</section>
 </main>
 </body>
 </html>

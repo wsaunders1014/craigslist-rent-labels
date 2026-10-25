@@ -11,4 +11,15 @@ fieldset p { margin: 4px 0 16px 22px; font-size: 12px; color: #645b6a; }
 
 #maxRows { display: block; width: 64px; padding: 6px 8px; margin-top: 8px; border: 1px solid #bbb; border-radius: 5px; font: inherit; }
 .hint { font-size: 12px; color: #645b6a; }
+
+/* Donation box, shared by the settings popup and the welcome page. */
+.donate { margin-top: 20px; padding: 14px 16px; border: 1px solid #e2b04a; border-radius: 8px; background: #fff8e6; }
+.donate h2 { font-size: 15px; margin: 0 0 4px; }
+.donate p { margin: 0 0 12px; font-size: 13px; color: #4f4556; }
+.donate-button {
+  display: inline-block; padding: 8px 20px; border-radius: 6px;
+  background: #ffc439; color: #2c1f00; box-shadow: 0 1px 3px #0002;
+  font: 700 14px system-ui, sans-serif; text-decoration: none;
+}
+.donate-button:hover { background: #f2b52a; }
 fieldset + fieldset { margin-top: 6px; }

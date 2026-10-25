@@ -1,9 +1,9 @@
 {
   "name": "craigslist-rent-labels",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "private": true,
   "license": "MIT",
   "scripts": {
-    "test": "node --check src/core.js && node --check src/adapters/craigslist.js && node --check src/adapters/apartments.js && node --check src/adapters/apartments-page.js && node --check settings.js && node --check settings-bridge.js && node core.test.cjs && node apartments.test.cjs && node apartments-page.test.cjs && node extension.test.cjs"
+    "test": "node --check src/core.js && node --check src/adapters/craigslist.js && node --check src/adapters/apartments.js && node --check src/adapters/apartments-page.js && node --check src/adapters/zillow.js && node --check settings.js && node --check background.js && node --check links.js && node --check welcome.js && node --check settings-bridge.js && node core.test.cjs && node apartments.test.cjs && node apartments-page.test.cjs && node zillow.test.cjs && node extension.test.cjs"
   }
 }
