@@ -20,7 +20,7 @@ Independent community project. Not affiliated with Craigslist or Google. This is
 - Deduplication by listing ID, matching title/details, matching leading photo/details, available street address/details, or nearby matching floor-plan offers.
 - Scrollable group previews with listing links and available thumbnails, prices, bedrooms, and square footage.
 - Possible room and coliving detection, for when a "$1,500 studio" search fills up with rooms in shared units. Choose to **tag** them ("Room?" or "Co-living?", listed last), **fade** them, **hide** them, or turn detection **off**. Default: tag. Never applied on "rooms & shares" searches.
-- **apartments.com:** search result cards that look like coliving, rooms, or per-bed student housing get a "Room?" or "Co-living?" badge, are faded, or are hidden, using the same setting. When cards are hidden, a small notice shows how many and lets you reveal them for that page.
+- **apartments.com:** search result cards that look like coliving, rooms, or per-bed student housing get a "Room?" or "Co-living?" badge and a yellow tint that clears on hover, are faded, or are hidden, using the same setting. Map pins for listings shown in the results become green price and bedroom labels, yellow for possible rooms, and follow the same fade or hide setting. When cards are hidden, a small notice shows how many and lets you reveal them for that page.
 - Toolbar settings for group clicks (**property list** or Craigslist's original **zoom**) and **1–20 marker rows** before +N more. Defaults: property list and three rows.
 - Preferences saved locally and applied to already loaded extension tabs automatically.
 
@@ -30,7 +30,7 @@ Deduplication groups likely repeated offers, not verified unique apartments. Dif
 
 Missing prices retain the original individual marker. Some bedroom counts or images may be unavailable. Native same-location Craigslist popups can still contain duplicate ads. The extension relies on Craigslist's internal Leaflet objects and may need updates when the site changes. Room and coliving detection reads wording (such as "private room", "roommate", "shared kitchen", "co-living") and unusually small sizes in the title and search location text. Map results do not include full descriptions, so some rooms will be missed and some whole units may be flagged; hover a flagged row to see why it was flagged.
 
-On apartments.com, detection also looks for per-bed or per-person pricing, individual leases, and known coliving operators, using the card's own text. The adapter depends on apartments.com's result card markup (captured October 2026) and may need updates when the site changes. Map pins there are not changed.
+On apartments.com, detection also looks for per-bed or per-person pricing, individual leases, and known coliving operators, using the card's own text. The adapter depends on apartments.com's result card markup (captured October 2026) and may need updates when the site changes. Map pin labels use the matching result card, so pins for listings not on the current results page keep apartments.com's own pin.
 
 ## Privacy and permissions
 
@@ -45,7 +45,7 @@ On apartments.com, detection also looks for per-bed or per-person pricing, indiv
 Plain JavaScript, CSS, and Manifest V3. No build step or dependencies are required to load the extension.
 
 - `src/core.js`: site-independent listing logic: parsing, labels, deduplication, and room/coliving detection. Works only on the shared Listing shape documented at the top of the file.
-- `src/adapters/apartments.js`: reads apartments.com result cards into Listings and tags, fades, or hides possible rooms (isolated world; reads settings from `chrome.storage` directly).
+- `src/adapters/apartments.js`: reads apartments.com result cards into Listings and tags, fades, or hides possible rooms, and relabels their map pins (isolated world; reads settings from `chrome.storage` directly).
 - `src/adapters/craigslist.js`: reads Craigslist's map markers, converts results into Listings, and renders labels and group previews (page context).
 - `settings-bridge.js`: passes saved preferences from isolated extension context to the page script.
 - `settings.html`, `settings.js`, `settings.css`: toolbar popup and Options page.

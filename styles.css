@@ -45,6 +45,13 @@
 
 /* apartments.com result cards. */
 .crl-ac-flagged { position: relative; }
+/* Tint the whole card in the badge color; clears on hover so the card reads normally. */
+.crl-ac-flagged::after {
+  content: ''; position: absolute; inset: 0; z-index: 4;
+  border-radius: inherit; background: rgb(226 176 74 / .45);
+  pointer-events: none; transition: opacity .15s;
+}
+.crl-ac-flagged:hover::after { opacity: 0; }
 .crl-ac-flagged.crl-dimmed { opacity: .45; transition: opacity .15s; }
 .crl-ac-flagged.crl-dimmed:hover { opacity: 1; }
 .crl-ac-flag {
@@ -63,3 +70,28 @@
   font: 600 13px/18px Arial, sans-serif; cursor: pointer;
 }
 .crl-ac-notice:hover { background: #f2e8ff; }
+
+/* apartments.com map pins: hide the native pin art, keep its click target and anchor. */
+.ap-marker:has(> .crl-ac-pin-label) {
+  width: auto !important; height: auto !important; padding: 0 !important;
+  border: 0 !important; background: none !important; box-shadow: none !important;
+}
+.ap-marker:has(> .crl-ac-pin-label)::before,
+.ap-marker:has(> .crl-ac-pin-label)::after { display: none !important; }
+.crl-ac-pin-label {
+  position: relative; display: block; margin-bottom: 6px;
+  padding: 3px 6px; border: 1px solid #14572a; border-radius: 3px;
+  background: #1f7a3a; color: #fff; box-shadow: 0 1px 4px #0004;
+  font: 700 11px/14px Arial, sans-serif; white-space: nowrap; cursor: pointer;
+}
+/* Tail pointing at the location. */
+.crl-ac-pin-label::after {
+  content: ''; position: absolute; left: 50%; bottom: -6px; margin-left: -5px;
+  border: solid transparent; border-width: 6px 5px 0; border-top-color: #1f7a3a;
+}
+.crl-ac-pin-label.crl-ac-pin-flagged { border-color: #b8861f; background: #e2b04a; color: #3d2800; }
+.crl-ac-pin-flagged::after { border-top-color: #e2b04a; }
+.crl-ac-pin-dimmed { opacity: .45; }
+gmp-advanced-marker:has(.crl-ac-pin-hidden) { display: none !important; }
+gmp-advanced-marker:has(.crl-ac-pin-label):hover { z-index: 1000000 !important; }
+.ap-marker:hover > .crl-ac-pin-label { filter: brightness(1.15); }
