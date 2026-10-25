@@ -38,6 +38,10 @@ const flagged = [
   ['Modern co-living suite in Koreatown', 'coliving'],
   ['Coliving: all-inclusive private bedrooms', 'coliving'],
   ['PadSplit room, move in today', 'coliving'],
+  ['Tripalink Hoover St', 'coliving'],
+  ['$1,200/bed, all utilities included', 'room'],
+  ['Studio - 4 Beds, priced per person', 'room'],
+  ['Individual leases available near USC', 'room'],
 ];
 for (const [title, type] of flagged) {
   const flag = core.classify(listing({title}));
@@ -59,6 +63,10 @@ const clean = [
   'Charming bungalow with yard',
   'Updated 1 bedroom near studio lot',
   'Ground floor unit, dining room, bonus room',
+  'Laundry room in each apartment building',
+  'Fitness room in the apartment complex',
+  'Pet friendly, $50 per bedroom deposit',
+  'Studio, 1 Bed, 2 Beds available',
 ];
 for (const title of clean) assert.equal(core.classify(listing({title})), null, `should not flag: ${title}`);
 assert.equal(core.classify(listing({title: 'Studio', sqft: 220, beds: 0})), null);
