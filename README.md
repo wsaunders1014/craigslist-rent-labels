@@ -76,6 +76,8 @@ npm test
 
 `apartments.test.cjs` covers apartments.com card parsing, pin labels, and each filter mode with a minimal fake DOM; `apartments-page.test.cjs` covers reading pin rents from that search data. `zillow.test.cjs` covers reading Zillow search results, pin labels, room tags, and filter modes with a fake page. `core.test.cjs` covers parsing, labels, address matching, room and coliving detection, and filter modes. The dependency-free simulated Leaflet tests in `extension.test.cjs` cover marker updates, bedroom/studio labels, group row limits, deduplication, group previews, room filter modes, and preference changes. Map labels, studio deduplication, group previews, and settings persistence have also been exercised manually in Chrome. These are not comprehensive automated end-to-end browser tests.
 
+Questions or problems: email 09z6gcml@anonaddy.me or open an issue.
+
 To contribute, fork the repository, make your changes, run the tests, and open a pull request. Bug reports should include the extension version, what happened, and a reproducible public search URL when possible. Do not include account information or private data.
 
 ### Packaging for the Chrome Web Store
