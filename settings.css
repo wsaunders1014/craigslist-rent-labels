@@ -11,3 +11,4 @@ fieldset p { margin: 4px 0 16px 22px; font-size: 12px; color: #645b6a; }
 
 #maxRows { display: block; width: 64px; padding: 6px 8px; margin-top: 8px; border: 1px solid #bbb; border-radius: 5px; font: inherit; }
 .hint { font-size: 12px; color: #645b6a; }
+fieldset + fieldset { margin-top: 6px; }

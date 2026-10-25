@@ -17,6 +17,17 @@
 <label><input type="radio" name="groupClick" value="zoom" disabled> Zoom into group</label>
 <p>Use Craigslist’s original map behavior.</p>
 </fieldset>
+<fieldset>
+<legend>Possible rooms and coliving</legend>
+<label><input type="radio" name="roomFilter" value="tag" disabled> Tag them</label>
+<p>Mark listings that look like a single room or coliving, and list them last.</p>
+<label><input type="radio" name="roomFilter" value="dim" disabled> Fade them</label>
+<p>Same as tagging, shown faded so whole units stand out.</p>
+<label><input type="radio" name="roomFilter" value="hide" disabled> Hide them</label>
+<p>Remove them from map bubbles and group previews.</p>
+<label><input type="radio" name="roomFilter" value="off" disabled> Off</label>
+<p>Detection uses wording and size, so some guesses will be wrong. Always off on “rooms &amp; shares” searches.</p>
+</fieldset>
 <label for="maxRows">Rows shown on map bubbles</label>
 <input id="maxRows" type="number" min="1" max="20" step="1" value="3" disabled>
 <p class="hint">Show 1–20 properties before “+N more.” Full previews show all offers.</p>
