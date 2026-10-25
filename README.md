@@ -37,6 +37,8 @@ On Zillow, pins are identified through the React data Zillow attaches to its map
 
 ## Privacy and permissions
 
+Full policy: [PRIVACY.md](PRIVACY.md).
+
 - No accounts, analytics, telemetry, or external server.
 - `storage` saves only the group-click, marker row count, and room filter preferences in `chrome.storage.local`.
 - On apartments.com, the extension reads only result cards already on the page and the search data the page itself loads for its map.
@@ -57,6 +59,7 @@ Plain JavaScript, CSS, and Manifest V3. No build step or dependencies are requir
 - `settings.html`, `settings.js`, `settings.css`: toolbar popup and Options page.
 - `background.js`, `welcome.html`, `welcome.js`, `welcome.css`: a welcome page opened once when the extension is installed (not on updates).
 - `links.js`: the donation link shown on the welcome and settings pages; hidden while empty.
+- `icons/`: extension icons, drawn by `tools/make_icons.py` (pure Python, no dependencies): `python3 tools/make_icons.py icons`.
 - `styles.css`: map labels and preview styles.
 
 ### Adding another site
@@ -74,6 +77,14 @@ npm test
 `apartments.test.cjs` covers apartments.com card parsing, pin labels, and each filter mode with a minimal fake DOM; `apartments-page.test.cjs` covers reading pin rents from that search data. `zillow.test.cjs` covers reading Zillow search results, pin labels, room tags, and filter modes with a fake page. `core.test.cjs` covers parsing, labels, address matching, room and coliving detection, and filter modes. The dependency-free simulated Leaflet tests in `extension.test.cjs` cover marker updates, bedroom/studio labels, group row limits, deduplication, group previews, room filter modes, and preference changes. Map labels, studio deduplication, group previews, and settings persistence have also been exercised manually in Chrome. These are not comprehensive automated end-to-end browser tests.
 
 To contribute, fork the repository, make your changes, run the tests, and open a pull request. Bug reports should include the extension version, what happened, and a reproducible public search URL when possible. Do not include account information or private data.
+
+### Packaging for the Chrome Web Store
+
+From the repository root, zip only the files the extension uses (tests, docs, and tools stay out):
+
+```sh
+zip -X rent-labels-$(node -p "require('./manifest.json').version").zip manifest.json LICENSE background.js links.js settings-bridge.js settings.html settings.js settings.css styles.css welcome.html welcome.js welcome.css icons/*.png src/core.js src/adapters/*.js
+```
 
 ## License
 
