@@ -101,6 +101,13 @@ const coliving = placard({id: 'c1', title: 'Tripalink Koreatown', address: '700 
 const perBed = placard({id: 'c2', title: 'Campus Lofts', address: 'Los Angeles, CA',
   options: [['4 Beds', '$1,200/person']]});
 body.append(studio, coliving, perBed);
+// Map pins, as in Google Maps advanced markers on result pages.
+const pinFor = id => el('div', {classes: ['ap-marker', 'std'], attrs: {'data-id': id, 'data-layer-id': 'result-layer'}});
+const [studioPin, colivingPin, otherPin] = ['a1', 'c1', 'zz9'].map(pinFor);
+body.append(studioPin, colivingPin, otherPin);
+assert.equal(ac.pinLabel(fields), '$1,550+ · Studio–1 Br');
+assert.equal(ac.pinLabel(ac.readPlacard(placard({id: 'p1', title: 'X', address: '', options: [['2 Beds', '$3,000']]}))), '$3,000 · 2 Br');
+assert.equal(ac.pinLabel(ac.readPlacard(placard({id: 'p2', title: 'X', address: '', options: [['1 - 3 Beds', 'Call for Rent']]}))), '1–3 Br');
 (async () => {
   await new Promise(resolve => setImmediate(resolve));
   const flag = node => node.querySelector('.crl-ac-flag');
@@ -109,16 +116,28 @@ body.append(studio, coliving, perBed);
   assert(flag(perBed).textContent.includes('priced per bed or person'));
   assert(coliving.classList.contains('crl-ac-flagged') && !coliving.classList.contains('crl-hidden-placard'));
 
+  // Pins with a card on the page get labels; flagged ones are colored; others stay native.
+  const pinLabel = pin => pin.querySelector('.crl-ac-pin-label');
+  assert.equal(pinLabel(studioPin).textContent, '$1,550+ · Studio–1 Br');
+  assert(!pinLabel(studioPin).classList.contains('crl-ac-pin-flagged'));
+  assert.equal(pinLabel(colivingPin).textContent, '$1,150+ · Studio–4 Br');
+  assert(pinLabel(colivingPin).classList.contains('crl-ac-pin-flagged'));
+  assert.equal(pinLabel(otherPin), null, 'pins without a card keep the native pin');
+
   // Re-scanning is stable: one badge, and the badge text is not re-read as card text.
   observerCallback([{addedNodes: [el('div')], removedNodes: []}]);
   assert.equal(coliving.querySelectorAll('.crl-ac-flag').length, 1);
+  assert.equal(colivingPin.querySelectorAll('.crl-ac-pin-label').length, 1);
 
   const change = value => storageListeners.forEach(fn => fn({roomFilter: {newValue: value}}, 'local'));
   change('dim');
   assert(coliving.classList.contains('crl-dimmed'));
+  assert(pinLabel(colivingPin).classList.contains('crl-ac-pin-dimmed'));
 
   change('hide');
   assert(coliving.classList.contains('crl-hidden-placard') && perBed.classList.contains('crl-hidden-placard'));
+  assert(pinLabel(colivingPin).classList.contains('crl-ac-pin-hidden'));
+  assert(!pinLabel(studioPin).classList.contains('crl-ac-pin-hidden'));
   assert(!studio.classList.contains('crl-hidden-placard'));
   const notice = body.querySelector('.crl-ac-notice');
   assert.equal(notice.textContent, 'Rent Labels hid 2 possible rooms · Show');
@@ -131,6 +150,7 @@ body.append(studio, coliving, perBed);
   change('off');
   assert.equal(coliving.querySelector('.crl-ac-flag'), null);
   assert(!coliving.classList.contains('crl-ac-flagged'));
+  assert(!pinLabel(colivingPin).classList.contains('crl-ac-pin-flagged'), 'off keeps pin labels but drops the room color');
 
-  console.log('Passed apartments.com: rent and bed parsing, floor-plan cards, fallback template, amenity text, tag, dim, hide with notice and reveal, off, stable re-scans.');
+  console.log('Passed apartments.com: rent and bed parsing, floor-plan cards, fallback template, amenity text, tag, dim, hide with notice and reveal, off, stable re-scans, map pin labels and room colors.');
 })().catch(error => { console.error(error); process.exit(1); });

@@ -1,8 +1,9 @@
 /*
  * apartments.com adapter. Reads the search result cards ("placards") already
  * on the page, converts each into a shared Listing (see src/core.js), and
- * tags, fades, or hides possible rooms and coliving. apartments.com already
- * shows price and bedrooms, so this adapter adds no labels of its own.
+ * tags, fades, or hides possible rooms and coliving. Map pins whose listing
+ * has a card on the page become price and bedroom labels, colored when the
+ * listing is a possible room.
  *
  * Runs in the extension's isolated world and reads settings directly from
  * chrome.storage. No requests, analytics, or page data leaves the browser.
@@ -25,6 +26,8 @@
     optionPrice: '.priceTextBox',
     fallbackPrice: '.property-pricing, .price-range, .property-rents',
     fallbackBeds: '.property-beds, .bed-range',
+    // Google Maps advanced marker content; data-id matches the card's listing ID.
+    pin: '.ap-marker[data-id]',
   };
   const MAX_TEXT = 2000;
 
@@ -110,7 +113,28 @@
     };
   }
 
-  root.apartments = Object.freeze({SELECTORS, parseRentText, parseBedsText, readPlacard, toListing});
+  const bedText = count => count === 0 ? 'Studio' : `${count} Br`;
+
+  /** Pin text such as '$1,550+ · Studio–1 Br'. '' when the card has no rent or beds. */
+  function pinLabel(fields) {
+    const rents = fields.options.map(option => option.rent).filter(Boolean);
+    const beds = fields.options.map(option => option.beds).filter(Boolean);
+    const parts = [];
+    if (rents.length) {
+      const varies = rents.length > 1 || rents.some(rent => rent.max);
+      parts.push(core.formatPrice(Math.min(...rents.map(rent => rent.min))) + (varies ? '+' : ''));
+    }
+    if (beds.length) {
+      const low = Math.min(...beds.map(range => range.min)), high = Math.max(...beds.map(range => range.max));
+      parts.push(low === high ? bedText(low) : `${low === 0 ? 'Studio' : low}–${high} Br`);
+    }
+    return parts.join(' · ');
+  }
+
+  /** Listing ID from the card, or the last path segment of its link. */
+  const listingKey = fields => fields.id || fields.url.split('/').filter(Boolean).pop() || '';
+
+  root.apartments = Object.freeze({SELECTORS, parseRentText, parseBedsText, readPlacard, toListing, pinLabel});
 
   // Everything below needs a real page.
   if (typeof document === 'undefined' || typeof MutationObserver === 'undefined') return;
@@ -119,16 +143,18 @@
   let revealed = false;
   const roomsSearch = /rooms?-for-rent|roommates?|shared-housing/i.test(location.pathname);
 
+  /** Tag, fade or hide one card. Returns what its map pin should show. */
   function render(el, mode) {
     const fields = readPlacard(el);
     const flag = fields && mode !== 'off' ? core.classify(toListing(fields)) : null;
+    const hide = !!flag && mode === 'hide' && !revealed;
+    const result = fields && {key: listingKey(fields), text: pinLabel(fields), flag, dim: !!flag && mode === 'dim', hide};
     const state = flag ? `${mode}|${revealed}|${flag.type}|${flag.reasons.join(',')}` : 'clean';
-    if (el.getAttribute('data-crl-state') === state) return flag && mode === 'hide' && !revealed;
+    if (el.getAttribute('data-crl-state') === state) return result;
     el.setAttribute('data-crl-state', state);
     el.classList.remove('crl-ac-flagged', 'crl-dimmed', 'crl-hidden-placard');
     el.querySelectorAll('.crl-ac-flag').forEach(badge => badge.remove());
-    if (!flag) return false;
-    const hide = mode === 'hide' && !revealed;
+    if (!flag) return result;
     el.classList.add('crl-ac-flagged');
     if (mode === 'dim') el.classList.add('crl-dimmed');
     if (hide) el.classList.add('crl-hidden-placard');
@@ -137,7 +163,27 @@
     badge.textContent = `${core.flagLabel(flag)} ${flag.reasons.join(', ')}`;
     badge.title = 'Flagged by Rent Labels. Detection uses wording, so it can be wrong.';
     el.prepend(badge);
-    return hide;
+    return result;
+  }
+
+  /** Replace a map pin's look with a label. Pins without a card on the page keep the native pin. */
+  function renderPin(pin, info) {
+    const state = info?.text ? `${info.text}|${info.flag?.type ?? ''}|${info.dim}|${info.hide}` : 'clean';
+    const current = pin.querySelector('.crl-ac-pin-label');
+    if (pin.getAttribute('data-crl-state') === state && !current === (state === 'clean')) return;
+    pin.setAttribute('data-crl-state', state);
+    current?.remove();
+    if (state === 'clean') return;
+    const label = document.createElement('span');
+    label.className = 'crl-ac-pin-label';
+    if (info.flag) {
+      label.classList.add('crl-ac-pin-flagged');
+      label.title = `${core.flagLabel(info.flag)} ${info.flag.reasons.join(', ')}`;
+    }
+    if (info.dim) label.classList.add('crl-ac-pin-dimmed');
+    if (info.hide) label.classList.add('crl-ac-pin-hidden');
+    label.textContent = info.text;
+    pin.append(label);
   }
 
   let notice;
@@ -156,9 +202,17 @@
   function scan() {
     const mode = roomsSearch ? 'off' : roomFilter;
     let hidden = 0;
+    const cards = new Map();
     for (const el of document.querySelectorAll(SELECTORS.placard)) {
-      try { if (render(el, mode)) hidden++; }
-      catch (error) { console.debug('[Rent Labels] Card format not supported', error); }
+      try {
+        const result = render(el, mode);
+        if (result?.hide) hidden++;
+        if (result?.key) cards.set(result.key, result);
+      } catch (error) { console.debug('[Rent Labels] Card format not supported', error); }
+    }
+    for (const pin of document.querySelectorAll(SELECTORS.pin)) {
+      try { renderPin(pin, cards.get(pin.getAttribute('data-id'))); }
+      catch (error) { console.debug('[Rent Labels] Map pin format not supported', error); }
     }
     showNotice(hidden);
   }
@@ -170,7 +224,7 @@
     pending = setTimeout(() => { pending = 0; scan(); }, 150);
   };
   // Ignore mutations made only by this extension, so rendering never loops.
-  const ownNode = node => node.classList?.contains('crl-ac-flag') || node.classList?.contains('crl-ac-notice');
+  const ownNode = node => ['crl-ac-flag', 'crl-ac-notice', 'crl-ac-pin-label'].some(name => node.classList?.contains(name));
   new MutationObserver(mutations => {
     if (!mutations.every(mutation => [...mutation.addedNodes, ...mutation.removedNodes].every(ownNode))) schedule();
   }).observe(document.documentElement, {childList: true, subtree: true});
